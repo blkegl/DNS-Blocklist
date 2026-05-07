@@ -2,35 +2,41 @@ import os
 import re
 import requests
 
-SOURCES = [
-    # your existing sources here
-]
-
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (DNS-Blocklist Builder)"
 }
 
-# Matches hosts-style entries
 HOSTS_RE = re.compile(
     r"^(?:0\.0\.0\.0|127\.0\.0\.1)?\s*(?P<domain>[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})"
 )
 
-# Adblock format: ||example.com^
 ADBLOCK_RE = re.compile(r"^\|\|(?P<domain>[^/^$]+)")
+
+
+# ----------------------------
+# Load sources from urls.txt
+# ----------------------------
+def load_sources(file_path="urls.txt"):
+    if not os.path.exists(file_path):
+        print(f"[ERROR] {file_path} not found!")
+        return []
+
+    with open(file_path, "r", encoding="utf-8") as f:
+        sources = [
+            line.strip()
+            for line in f
+            if line.strip() and not line.startswith("#")
+        ]
+
+    return sources
 
 
 def clean_domain(domain: str) -> str | None:
     domain = domain.strip().lower().rstrip(".")
-
-    # remove adblock artifacts
     domain = domain.replace("^", "")
 
-    # basic validation
     if not re.match(r"^[a-z0-9.-]+\.[a-z]{2,}$", domain):
         return None
-
-    # remove leading dot if any
-    domain = domain.lstrip(".")
 
     return domain
 
@@ -41,10 +47,12 @@ def normalize_domain(line: str) -> str | None:
     if not line or line.startswith("#"):
         return None
 
+    # hosts format
     m = HOSTS_RE.match(line)
     if m:
         return clean_domain(m.group("domain"))
 
+    # adblock format
     m = ADBLOCK_RE.match(line)
     if m:
         return clean_domain(m.group("domain"))
@@ -72,11 +80,13 @@ def collapse_domain(domain: str) -> str:
 
 
 def build_blocklist(collapse_subdomains: bool = False) -> set[str]:
+    sources = load_sources("urls.txt")
+
+    print("[INFO] Loaded sources:", len(sources))
+
     unique = set()
 
-    print(f"[INFO] Loaded sources: {len(SOURCES)}")
-
-    for url in SOURCES:
+    for url in sources:
         print(f"[INFO] Downloading: {url}")
         lines = fetch(url)
 
@@ -93,13 +103,14 @@ def build_blocklist(collapse_subdomains: bool = False) -> set[str]:
     return unique
 
 
-def write_file(path: str, content: list[str]):
-    # 🔥 FIX: ensure directory exists
+# ----------------------------
+# File writers (FIXED)
+# ----------------------------
+def write_file(path: str, lines: list[str]):
     os.makedirs(os.path.dirname(path), exist_ok=True)
 
     with open(path, "w", encoding="utf-8") as f:
-        for line in content:
-            f.write(line + "\n")
+        f.write("\n".join(lines))
 
 
 def write_hosts(domains: set[str]):
@@ -116,15 +127,18 @@ def write_dnsmasq(domains: set[str]):
     )
 
 
+# ----------------------------
+# Main
+# ----------------------------
 if __name__ == "__main__":
-    COLLAPSE = False  # set True to reduce size heavily
+    COLLAPSE = False  # set True to reduce size
 
     domains = build_blocklist(collapse_subdomains=COLLAPSE)
 
     print("[INFO] Unique domains:", len(domains))
 
     if not domains:
-        print("[WARNING] No domains collected. Check SOURCES.")
+        print("[WARNING] No domains collected. Check urls.txt content.")
         exit(1)
 
     write_hosts(domains)
