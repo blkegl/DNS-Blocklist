@@ -2,7 +2,7 @@
 https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/hosts/ultimate.txt
 
 # Threat Intelligence Feeds
-https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/hosts/tif.txt
+# https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/hosts/tif.txt
 
 # URL Shortner
 https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/dnsmasq/urlshortener.txt
