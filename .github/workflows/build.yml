@@ -1,49 +1,137 @@
-name: Build Blocklists
+import re
+import requests
+from urllib.parse import urlparse
+from collections import defaultdict
 
-on:
-  schedule:
-    - cron: "0 21 * * *"  # 3:00 AM Bangladesh time (UTC+6 → 21:00 UTC)
-  workflow_dispatch:
+SOURCES = [
+    # your existing sources here
+]
 
-permissions:
-  contents: write
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (DNS-Blocklist Builder)"
+}
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
+DOMAIN_RE = re.compile(
+    r"^(?:0\.0\.0\.0|127\.0\.0\.1)?\s*"
+    r"(?P<domain>[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})"
+)
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
-
-      - name: Run build script
-        run: |
-          python build.py
-
-      - name: Commit generated blocklists
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          # Add ONLY generated outputs
-          git add output/hosts.txt output/dnsmasq.conf
-
-          git commit -m "Update blocklists $(date -u)" || echo "No changes to commit"
-          git push
+ADBLOCK_RE = re.compile(r"^\|\|(?P<domain>[^/^$]+)")
 
 
+def normalize_domain(line: str) -> str | None:
+    line = line.strip()
+
+    if not line or line.startswith("#"):
+        return None
+
+    # hosts format: 0.0.0.0 example.com
+    m = DOMAIN_RE.match(line)
+    if m:
+        return clean_domain(m.group("domain"))
+
+    # adblock format: ||example.com^
+    m = ADBLOCK_RE.match(line)
+    if m:
+        return clean_domain(m.group("domain"))
+
+    # raw domain fallback
+    if "." in line and " " not in line:
+        return clean_domain(line)
+
+    return None
 
 
+def clean_domain(domain: str) -> str | None:
+    domain = domain.strip().lower()
+
+    # remove trailing dot
+    if domain.endswith("."):
+        domain = domain[:-1]
+
+    # remove adblock artifacts
+    domain = domain.replace("^", "")
+
+    # basic validation
+    if not re.match(r"^[a-z0-9.-]+\.[a-z]{2,}$", domain):
+        return None
+
+    return domain
 
 
+def get_domain_sets():
+    return set(), set()
 
-          
+
+def fetch(url: str) -> list[str]:
+    try:
+        r = requests.get(url, headers=HEADERS, timeout=30)
+        r.raise_for_status()
+        return r.text.splitlines()
+    except Exception as e:
+        print(f"[ERROR] Failed: {url} → {e}")
+        return []
+
+
+def collapse_domain(domain: str) -> str:
+    """
+    OPTIONAL: collapses subdomains -> root domain
+    Example:
+        ads.google.com -> google.com
+    """
+    parts = domain.split(".")
+    if len(parts) <= 2:
+        return domain
+    return ".".join(parts[-2:])
+
+
+def build_blocklist(collapse_subdomains: bool = False):
+    unique = set()
+    seen_sources = 0
+
+    for url in SOURCES:
+        print(f"[INFO] Downloading: {url}")
+        lines = fetch(url)
+        seen_sources += 1
+
+        for line in lines:
+            domain = normalize_domain(line)
+            if not domain:
+                continue
+
+            if collapse_subdomains:
+                domain = collapse_domain(domain)
+
+            unique.add(domain)
+
+    return unique
+
+
+def write_hosts(domains, path="output/hosts.txt"):
+    with open(path, "w") as f:
+        for d in sorted(domains):
+            f.write(f"0.0.0.0 {d}\n")
+
+
+def write_dnsmasq(domains, path="output/dnsmasq.conf"):
+    with open(path, "w") as f:
+        for d in sorted(domains):
+            f.write(f"address=/{d}/0.0.0.0\n")
+
+
+if __name__ == "__main__":
+    print("[INFO] Loaded sources:", len(SOURCES))
+
+    # CHANGE THIS:
+    COLLAPSE = False   # set True if you want much smaller list
+
+    domains = build_blocklist(collapse_subdomains=COLLAPSE)
+
+    print("[INFO] Unique domains:", len(domains))
+
+    write_hosts(domains)
+    write_dnsmasq(domains)
+
+    print("[INFO] Files generated:")
+    print("   output/hosts.txt")
+    print("   output/dnsmasq.conf")
