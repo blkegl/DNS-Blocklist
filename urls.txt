@@ -32,10 +32,10 @@ https://raw.githubusercontent.com/r-a-y/mobile-hosts/master/AdguardMobileSpyware
 https://raw.githubusercontent.com/furkun/AndroidSecurityHosts/main/hosts
 
 # Combined Privacy Block Lists HOSTS
-https://raw.githubusercontent.com/bongochong/CombinedPrivacyBlockLists/master/newhosts-final.hosts
+# https://raw.githubusercontent.com/bongochong/CombinedPrivacyBlockLists/master/newhosts-final.hosts
 
 # Energized - Ultimate
-https://energized.pro/ultimate/hosts.txt
+# https://energized.pro/ultimate/hosts.txt
 
 # First-party trackers host list
 https://hostfiles.frogeye.fr/firstparty-trackers-hosts.txt
@@ -47,13 +47,13 @@ https://raw.githubusercontent.com/kowith337/PersonalFilterListCollection/master/
 https://raw.githubusercontent.com/Hakame-kun/uBlock-Filters-Indonesia/master/Windows%20Host/hosts
 
 # Hosts Blocking
-https://raw.githubusercontent.com/michaeltrimm/hosts-blocking/master/_hosts.txt
+# https://raw.githubusercontent.com/michaeltrimm/hosts-blocking/master/_hosts.txt
 
 # infinitytec's blocklists - Ads and Trackers
-https://raw.githubusercontent.com/infinitytec/blocklists/master/ads-and-trackers.txt
+# https://raw.githubusercontent.com/infinitytec/blocklists/master/ads-and-trackers.txt
 
 # infinitytec's blocklists - Scams and Phishing
-https://raw.githubusercontent.com/infinitytec/blocklists/master/scams-and-phishing.txt
+# https://raw.githubusercontent.com/infinitytec/blocklists/master/scams-and-phishing.txt
 
 # no-google | DoubleClick
 https://raw.githubusercontent.com/nickspaargaren/no-google/master/categories/doubleclick.txt
@@ -62,7 +62,7 @@ https://raw.githubusercontent.com/nickspaargaren/no-google/master/categories/dou
 https://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/hosts.txt
 
 # Ultimate Hosts Blacklist
-https://hosts.ubuntu101.co.za/hosts
+# https://hosts.ubuntu101.co.za/hosts
 
 # Steven Black
 https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews/hosts
