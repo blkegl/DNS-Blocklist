@@ -59,14 +59,14 @@ https://raw.githubusercontent.com/Hakame-kun/uBlock-Filters-Indonesia/master/Win
 https://raw.githubusercontent.com/nickspaargaren/no-google/master/categories/doubleclick.txt
 
 # NoCoin Filter List
-https://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/hosts.txt
+# https://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/hosts.txt
 
 # Ultimate Hosts Blacklist
 # https://hosts.ubuntu101.co.za/hosts
 
 # Steven Black
-https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews/hosts
+# https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews/hosts
 
 # Phising Army
-https://phishing.army/download/phishing_army_blocklist_extended.txt
+# https://phishing.army/download/phishing_army_blocklist_extended.txt
 
