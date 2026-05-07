@@ -1,49 +1,38 @@
-name: Build Blocklists
+name: Build Blocklist
 
 on:
   schedule:
-    - cron: "0 21 * * *"  # 3:00 AM Bangladesh time (UTC+6 → 21:00 UTC)
-  workflow_dispatch:
+    # 3 AM Bangladesh time (UTC+6)
+    - cron: '0 21 * * *'
 
-permissions:
-  contents: write
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: '3.12'
 
       - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
+        run: pip install -r requirements.txt
 
-      - name: Run build script
-        run: |
-          python build.py
+      - name: Generate blocklist
+        run: python build.py
 
-      - name: Commit generated blocklists
+      - name: Commit updated output
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          # Add ONLY generated outputs
-          git add output/hosts.txt output/dnsmasq.conf
-
-          git commit -m "Update blocklists $(date -u)" || echo "No changes to commit"
+          git add output.txt
+          git commit -m "Update blocklist" || echo "No changes"
           git push
-
-
-
-
-
-
-
-          
