@@ -1,72 +1,35 @@
 # Hagezi Ultimate
 https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/hosts/ultimate.txt
 
-# Threat Intelligence Feeds
+# Threat Intelligence
 https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/hosts/tif.txt
 
-# URL Shortner
-# https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/dnsmasq/urlshortener.txt
+# URL Shorteners
+https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/dnsmasq/urlshortener.txt
 
 # Dynamic DNS
-# https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/dnsmasq/dyndns.txt
+https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/dnsmasq/dyndns.txt
 
-# Badware Hoster
-# https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/dnsmasq/hoster.txt
+# DoH / VPN / Proxy Bypass
+https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/dnsmasq/doh-vpn-proxy-bypass.txt
 
-# DoH/VPN/TOR/Proxy Bypass
-# https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/dnsmasq/doh-vpn-proxy-bypass.txt
-
-# Dandelion Sprout's Anti-Malware List
-# https://raw.githubusercontent.com/DandelionSprout/adfilt/master/Alternate%20versions%20Anti-Malware%20List/AntiMalwareHosts.txt
-
-# Adguard DNS
-# https://raw.githubusercontent.com/r-a-y/mobile-hosts/master/AdguardDNS.txt
-
-# Adguard Mobile Ads
-# https://raw.githubusercontent.com/r-a-y/mobile-hosts/master/AdguardMobileAds.txt
-
-# Adguard Mobile Tracking and Spyware
-# https://raw.githubusercontent.com/r-a-y/mobile-hosts/master/AdguardMobileSpyware.txt
+# Phishing Army
+https://phishing.army/download/phishing_army_blocklist_extended.txt
 
 # Android Security Hosts
-# https://raw.githubusercontent.com/furkun/AndroidSecurityHosts/main/hosts
+https://raw.githubusercontent.com/furkun/AndroidSecurityHosts/main/hosts
 
-# Combined Privacy Block Lists HOSTS
-# https://raw.githubusercontent.com/bongochong/CombinedPrivacyBlockLists/master/newhosts-final.hosts
+# NoCoin
+https://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/hosts.txt
 
-# Energized - Ultimate
-# https://energized.pro/ultimate/hosts.txt
+# First-Party Trackers
+https://hostfiles.frogeye.fr/firstparty-trackers-hosts.txt
 
-# First-party trackers host list
-# https://hostfiles.frogeye.fr/firstparty-trackers-hosts.txt
+# Google
+https://raw.githubusercontent.com/kowith337/PersonalFilterListCollection/master/hosts/hosts_google_adservice_id.txt
 
-# Google AdService
-# https://raw.githubusercontent.com/kowith337/PersonalFilterListCollection/master/hosts/hosts_google_adservice_id.txt
+# Badware Hoster
+https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/dnsmasq/hoster.txt
 
-# Hakame-kun's Windows Host
-# https://raw.githubusercontent.com/Hakame-kun/uBlock-Filters-Indonesia/master/Windows%20Host/hosts
-
-# Hosts Blocking
-# https://raw.githubusercontent.com/michaeltrimm/hosts-blocking/master/_hosts.txt
-
-# infinitytec's blocklists - Ads and Trackers
-# https://raw.githubusercontent.com/infinitytec/blocklists/master/ads-and-trackers.txt
-
-# infinitytec's blocklists - Scams and Phishing
-# https://raw.githubusercontent.com/infinitytec/blocklists/master/scams-and-phishing.txt
-
-# no-google | DoubleClick
-# https://raw.githubusercontent.com/nickspaargaren/no-google/master/categories/doubleclick.txt
-
-# NoCoin Filter List
-# https://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/hosts.txt
-
-# Ultimate Hosts Blacklist
-# https://hosts.ubuntu101.co.za/hosts
-
-# Steven Black
-# https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews/hosts
-
-# Phising Army
-# https://phishing.army/download/phishing_army_blocklist_extended.txt
-
+# Dandelion Sprout's Anti-Malware List
+https://raw.githubusercontent.com/DandelionSprout/adfilt/master/Alternate%20versions%20Anti-Malware%20List/AntiMalwareHosts.txt
