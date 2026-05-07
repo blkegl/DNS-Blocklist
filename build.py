@@ -1,171 +1,137 @@
-#!/usr/bin/env python3
-
-"""
-Unified Blocklist Builder (OpenWrt + Android AdAway)
-
-Input:
-    urls.txt → list of blocklist URLs
-
-Output:
-    output/hosts.txt      → Android (AdAway)
-    output/dnsmasq.conf   → OpenWrt (dnsmasq)
-
-Features:
-    - Supports hosts, dnsmasq, and plain domain formats
-    - Removes duplicates
-    - Normalizes domains
-"""
-
 import re
-from pathlib import Path
-import urllib.request
+import requests
+from urllib.parse import urlparse
+from collections import defaultdict
 
-# =========================
-# CONFIG
-# =========================
-
-URL_FILE = "urls.txt"
-OUTPUT_DIR = Path("output")
-
-HOSTS_FILE = OUTPUT_DIR / "hosts.txt"
-DNSMASQ_FILE = OUTPUT_DIR / "dnsmasq.conf"
+SOURCES = [
+    # your existing sources here
+]
 
 HEADERS = {
-    "User-Agent": "Mozilla/5.0 BlocklistBuilder/1.0"
+    "User-Agent": "Mozilla/5.0 (DNS-Blocklist Builder)"
 }
 
-# =========================
-# DOMAIN VALIDATION
-# =========================
-
-DOMAIN_REGEX = re.compile(
-    r"^(?:[a-zA-Z0-9]"
-    r"(?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+"
-    r"[a-zA-Z]{2,}$"
+DOMAIN_RE = re.compile(
+    r"^(?:0\.0\.0\.0|127\.0\.0\.1)?\s*"
+    r"(?P<domain>[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})"
 )
 
-
-def is_valid_domain(domain: str) -> bool:
-    return bool(DOMAIN_REGEX.match(domain))
+ADBLOCK_RE = re.compile(r"^\|\|(?P<domain>[^/^$]+)")
 
 
-def normalize(domain: str) -> str:
-    return domain.strip().lower().lstrip(".")
-
-
-# =========================
-# PARSER
-# =========================
-
-def extract_domain(line: str):
+def normalize_domain(line: str) -> str | None:
     line = line.strip()
 
-    if not line or line.startswith(("#", "!", ";", "//")):
+    if not line or line.startswith("#"):
         return None
 
-    # remove inline comments
-    if "#" in line:
-        line = line.split("#", 1)[0].strip()
-
-    # hosts format
-    m = re.match(r"^(0\.0\.0\.0|127\.0\.0\.1|::1)\s+([^\s]+)", line)
+    # hosts format: 0.0.0.0 example.com
+    m = DOMAIN_RE.match(line)
     if m:
-        return normalize(m.group(2))
+        return clean_domain(m.group("domain"))
 
-    # dnsmasq format
-    m = re.match(r"^address=/([^/]+)/", line)
+    # adblock format: ||example.com^
+    m = ADBLOCK_RE.match(line)
     if m:
-        return normalize(m.group(1))
+        return clean_domain(m.group("domain"))
 
-    # plain domain
-    return normalize(line.split()[0])
+    # raw domain fallback
+    if "." in line and " " not in line:
+        return clean_domain(line)
 
-
-# =========================
-# DOWNLOAD
-# =========================
-
-def download(url: str) -> str:
-    req = urllib.request.Request(url, headers=HEADERS)
-    with urllib.request.urlopen(req, timeout=60) as response:
-        return response.read().decode(errors="ignore")
+    return None
 
 
-# =========================
-# MAIN
-# =========================
+def clean_domain(domain: str) -> str | None:
+    domain = domain.strip().lower()
 
-def main():
-    OUTPUT_DIR.mkdir(exist_ok=True)
+    # remove trailing dot
+    if domain.endswith("."):
+        domain = domain[:-1]
 
-    if not Path(URL_FILE).exists():
-        print("[ERROR] urls.txt not found")
-        return
+    # remove adblock artifacts
+    domain = domain.replace("^", "")
 
-    urls = [
-        line.strip()
-        for line in open(URL_FILE, "r", encoding="utf-8")
-        if line.strip() and not line.startswith("#")
-    ]
+    # basic validation
+    if not re.match(r"^[a-z0-9.-]+\.[a-z]{2,}$", domain):
+        return None
 
-    domains = set()
+    return domain
 
-    print(f"[INFO] Loaded {len(urls)} blocklist sources")
 
-    # =========================
-    # PROCESS EACH LIST
-    # =========================
+def get_domain_sets():
+    return set(), set()
 
-    for url in urls:
+
+def fetch(url: str) -> list[str]:
+    try:
+        r = requests.get(url, headers=HEADERS, timeout=30)
+        r.raise_for_status()
+        return r.text.splitlines()
+    except Exception as e:
+        print(f"[ERROR] Failed: {url} → {e}")
+        return []
+
+
+def collapse_domain(domain: str) -> str:
+    """
+    OPTIONAL: collapses subdomains -> root domain
+    Example:
+        ads.google.com -> google.com
+    """
+    parts = domain.split(".")
+    if len(parts) <= 2:
+        return domain
+    return ".".join(parts[-2:])
+
+
+def build_blocklist(collapse_subdomains: bool = False):
+    unique = set()
+    seen_sources = 0
+
+    for url in SOURCES:
         print(f"[INFO] Downloading: {url}")
+        lines = fetch(url)
+        seen_sources += 1
 
-        try:
-            data = download(url)
-        except Exception as e:
-            print(f"[ERROR] Failed: {url} → {e}")
-            continue
-
-        for line in data.splitlines():
-            domain = extract_domain(line)
-
+        for line in lines:
+            domain = normalize_domain(line)
             if not domain:
                 continue
 
-            if not is_valid_domain(domain):
-                continue
+            if collapse_subdomains:
+                domain = collapse_domain(domain)
 
-            domains.add(domain)
+            unique.add(domain)
 
-    sorted_domains = sorted(domains)
+    return unique
 
-    print(f"[INFO] Unique domains: {len(sorted_domains)}")
 
-    # =========================
-    # WRITE: ANDROID (AdAway)
-    # =========================
-
-    with open(HOSTS_FILE, "w", encoding="utf-8") as f:
-        f.write("# Blocklist for AdAway (Android)\n")
-        f.write("# Generated automatically\n\n")
-
-        for d in sorted_domains:
+def write_hosts(domains, path="output/hosts.txt"):
+    with open(path, "w") as f:
+        for d in sorted(domains):
             f.write(f"0.0.0.0 {d}\n")
 
-    # =========================
-    # WRITE: OPENWRT (dnsmasq)
-    # =========================
 
-    with open(DNSMASQ_FILE, "w", encoding="utf-8") as f:
-        f.write("# Blocklist for OpenWrt dnsmasq\n")
-        f.write("# Generated automatically\n\n")
-
-        for d in sorted_domains:
+def write_dnsmasq(domains, path="output/dnsmasq.conf"):
+    with open(path, "w") as f:
+        for d in sorted(domains):
             f.write(f"address=/{d}/0.0.0.0\n")
-
-    print("[INFO] Files generated:")
-    print(f"       {HOSTS_FILE}")
-    print(f"       {DNSMASQ_FILE}")
 
 
 if __name__ == "__main__":
-    main()
+    print("[INFO] Loaded sources:", len(SOURCES))
+
+    # CHANGE THIS:
+    COLLAPSE = False   # set True if you want much smaller list
+
+    domains = build_blocklist(collapse_subdomains=COLLAPSE)
+
+    print("[INFO] Unique domains:", len(domains))
+
+    write_hosts(domains)
+    write_dnsmasq(domains)
+
+    print("[INFO] Files generated:")
+    print("   output/hosts.txt")
+    print("   output/dnsmasq.conf")
