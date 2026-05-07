@@ -1,37 +1,25 @@
-import os
 import re
+import os
 import requests
+from collections import defaultdict
+
+# Load URLs from file instead of hardcoding
+def load_sources(file="urls.txt"):
+    with open(file, "r") as f:
+        return [line.strip() for line in f if line.strip() and not line.startswith("#")]
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (DNS-Blocklist Builder)"
 }
 
-HOSTS_RE = re.compile(
-    r"^(?:0\.0\.0\.0|127\.0\.0\.1)?\s*(?P<domain>[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})"
+DOMAIN_RE = re.compile(
+    r"^(?:0\.0\.0\.0|127\.0\.0\.1)?\s*"
+    r"(?P<domain>[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})"
 )
 
-ADBLOCK_RE = re.compile(r"^\|\|(?P<domain>[^/^$]+)")
+ADBLOCK_RE = re.compile(r"^\|\|(?P<domain>[^/^$^]+)")
 
-
-# ----------------------------
-# Load sources from urls.txt
-# ----------------------------
-def load_sources(file_path="urls.txt"):
-    if not os.path.exists(file_path):
-        print(f"[ERROR] {file_path} not found!")
-        return []
-
-    with open(file_path, "r", encoding="utf-8") as f:
-        sources = [
-            line.strip()
-            for line in f
-            if line.strip() and not line.startswith("#")
-        ]
-
-    return sources
-
-
-def clean_domain(domain: str) -> str | None:
+def clean_domain(domain: str):
     domain = domain.strip().lower().rstrip(".")
     domain = domain.replace("^", "")
 
@@ -41,30 +29,56 @@ def clean_domain(domain: str) -> str | None:
     return domain
 
 
-def normalize_domain(line: str) -> str | None:
+def normalize_domain(line: str):
     line = line.strip()
 
     if not line or line.startswith("#"):
         return None
 
-    # hosts format
-    m = HOSTS_RE.match(line)
+    m = DOMAIN_RE.match(line)
     if m:
         return clean_domain(m.group("domain"))
 
-    # adblock format
     m = ADBLOCK_RE.match(line)
     if m:
         return clean_domain(m.group("domain"))
 
-    # raw domain fallback
     if "." in line and " " not in line:
         return clean_domain(line)
 
     return None
 
 
-def fetch(url: str) -> list[str]:
+# OPTION A: collapse subdomains
+def collapse_domain(domain: str):
+    parts = domain.split(".")
+    if len(parts) <= 2:
+        return domain
+    return ".".join(parts[-2:])
+
+
+# OPTION B: smarter dedupe using parent tracking
+def reduce_domains(domains):
+    """
+    If a root domain exists, remove its subdomains.
+    If subdomains exist first, they get replaced by root later.
+    """
+    collapsed = set()
+    children_map = defaultdict(set)
+
+    # first collapse everything
+    for d in domains:
+        base = collapse_domain(d)
+        children_map[base].add(d)
+
+    # keep only base domains
+    for base in children_map:
+        collapsed.add(base)
+
+    return collapsed
+
+
+def fetch(url: str):
     try:
         r = requests.get(url, headers=HEADERS, timeout=30)
         r.raise_for_status()
@@ -74,17 +88,11 @@ def fetch(url: str) -> list[str]:
         return []
 
 
-def collapse_domain(domain: str) -> str:
-    parts = domain.split(".")
-    return domain if len(parts) <= 2 else ".".join(parts[-2:])
+def build_blocklist():
+    sources = load_sources()
+    print(f"[INFO] Loaded sources: {len(sources)}")
 
-
-def build_blocklist(collapse_subdomains: bool = False) -> set[str]:
-    sources = load_sources("urls.txt")
-
-    print("[INFO] Loaded sources:", len(sources))
-
-    unique = set()
+    raw_domains = set()
 
     for url in sources:
         print(f"[INFO] Downloading: {url}")
@@ -92,58 +100,41 @@ def build_blocklist(collapse_subdomains: bool = False) -> set[str]:
 
         for line in lines:
             domain = normalize_domain(line)
-            if not domain:
-                continue
+            if domain:
+                raw_domains.add(domain)
 
-            if collapse_subdomains:
-                domain = collapse_domain(domain)
+    print(f"[INFO] Raw unique domains: {len(raw_domains)}")
 
-            unique.add(domain)
+    # APPLY BOTH OPTIMIZATIONS
+    reduced = reduce_domains(raw_domains)
 
-    return unique
+    print(f"[INFO] Reduced domains: {len(reduced)}")
+
+    return reduced
 
 
-# ----------------------------
-# File writers (FIXED)
-# ----------------------------
-def write_file(path: str, lines: list[str]):
+def write_file(domains, path):
     os.makedirs(os.path.dirname(path), exist_ok=True)
-
-    with open(path, "w", encoding="utf-8") as f:
-        f.write("\n".join(lines))
-
-
-def write_hosts(domains: set[str]):
-    write_file(
-        "output/hosts.txt",
-        [f"0.0.0.0 {d}" for d in sorted(domains)]
-    )
+    with open(path, "w") as f:
+        for d in sorted(domains):
+            f.write(f"0.0.0.0 {d}\n")
 
 
-def write_dnsmasq(domains: set[str]):
-    write_file(
-        "output/dnsmasq.conf",
-        [f"address=/{d}/0.0.0.0" for d in sorted(domains)]
-    )
+def write_dnsmasq(domains, path):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w") as f:
+        for d in sorted(domains):
+            f.write(f"address=/{d}/0.0.0.0\n")
 
 
-# ----------------------------
-# Main
-# ----------------------------
 if __name__ == "__main__":
-    COLLAPSE = False  # set True to reduce size
-
-    domains = build_blocklist(collapse_subdomains=COLLAPSE)
-
-    print("[INFO] Unique domains:", len(domains))
+    domains = build_blocklist()
 
     if not domains:
-        print("[WARNING] No domains collected. Check urls.txt content.")
+        print("[ERROR] No domains collected. Check urls.txt")
         exit(1)
 
-    write_hosts(domains)
-    write_dnsmasq(domains)
+    write_file(domains, "output/hosts.txt")
+    write_dnsmasq(domains, "output/dnsmasq.conf")
 
-    print("[INFO] Files generated:")
-    print(" - output/hosts.txt")
-    print(" - output/dnsmasq.conf")
+    print("[INFO] Files generated successfully")
