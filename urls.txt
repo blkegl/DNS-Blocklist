@@ -17,7 +17,7 @@ https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/dnsmasq/dyndns.txt
 https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/dnsmasq/doh-vpn-proxy-bypass.txt
 
 # Phishing Army
-https://phishing.army/download/phishing_army_blocklist_extended.txt
+# https://phishing.army/download/phishing_army_blocklist_extended.txt
 
 # Android Security Hosts
 https://raw.githubusercontent.com/furkun/AndroidSecurityHosts/main/hosts
