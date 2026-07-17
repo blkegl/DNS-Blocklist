@@ -212,14 +212,14 @@ def main():
     sorted_domains = sorted(valid_domains)
 
     # =========================
-    # OUTPUT (AdAway only)
+    # OUTPUT (Plain domain list)
     # =========================
-
+    
     with open(ADAWAY_FILE, "w", encoding="utf-8") as f:
-        f.write("# AdAway hosts blocklist\n\n")
-
+        f.write("# Plain domain blocklist\n\n")
+    
         for d in sorted_domains:
-            f.write(f"0.0.0.0 {d}\n")
+            f.write(f"{d}\n")
 
     # =========================
     # PER-SOURCE METRICS REPORT
