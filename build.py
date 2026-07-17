@@ -112,6 +112,19 @@ def extract_domain(line: str):
 
 
 # =========================
+# HELPER FOR FILE SIZE
+# =========================
+
+def format_size(size_bytes: int) -> str:
+    """Format bytes into a human-readable string."""
+    for unit in ['B', 'KB', 'MB', 'GB']:
+        if size_bytes < 1024.0:
+            return f"{size_bytes:.2f} {unit}"
+        size_bytes /= 1024.0
+    return f"{size_bytes:.2f} TB"
+
+
+# =========================
 # MAIN
 # =========================
 
@@ -140,8 +153,10 @@ def main():
 
     raw_domains = 0
     valid_domains = set()
-
     total_downloaded = 0
+    
+    # Dictionary to store performance metrics for each URL source
+    source_metrics = []
 
     for i, url in enumerate(urls, start=1):
         print(f"[INFO] ({i}/{len(urls)}) Downloading: {url}")
@@ -153,26 +168,42 @@ def main():
                 timeout=TIMEOUT,
                 stream=True,
             ) as r:
-
                 r.raise_for_status()
                 total_downloaded += 1
 
-                for raw_line in r.iter_lines(decode_unicode=True):
-                    if not raw_line:
+                # Track metrics specifically for this URL source
+                bytes_received = 0
+                source_unique_domains = set()
+
+                # Using iter_content allows us to accurately track download payload sizes in bytes
+                # while we reconstruct lines to parse the domains.
+                for chunk in r.iter_content(chunk_size=65536, decode_unicode=True):
+                    if not chunk:
                         continue
+                    bytes_received += len(chunk.encode('utf-8'))
+                    
+                    # Split lines manually since we are using stream chunks
+                    for raw_line in chunk.splitlines():
+                        domain = extract_domain(raw_line)
+                        if not domain:
+                            continue
 
-                    domain = extract_domain(raw_line)
+                        raw_domains += 1
 
-                    if not domain:
-                        continue
+                        if not is_valid_domain(domain):
+                            continue
 
-                    raw_domains += 1
+                        source_unique_domains.add(domain)
 
-                    if not is_valid_domain(domain):
-                        continue
+                # Store the metrics data for this item
+                source_metrics.append({
+                    "url": url,
+                    "size_bytes": bytes_received,
+                    "domain_count": len(source_unique_domains)
+                })
 
-                    # FINAL STRONG DEDUPE (set already helps, normalization ensures correctness)
-                    valid_domains.add(domain)
+                # Merge this list's validated findings into our global unified set
+                valid_domains.update(source_unique_domains)
 
         except Exception as e:
             print(f"[ERROR] Failed: {url} -> {e}")
@@ -191,14 +222,31 @@ def main():
             f.write(f"0.0.0.0 {d}\n")
 
     # =========================
-    # STATS
+    # PER-SOURCE METRICS REPORT
+    # =========================
+    print("\n" + "="*50)
+    print(" INDIVIDUAL SOURCE METRICS REPORT")
+    print("="*50)
+    
+    # Optional: Sort the output display by domain count descending
+    source_metrics.sort(key=lambda x: x['domain_count'], reverse=True)
+    
+    for metric in source_metrics:
+        readable_size = format_size(metric['size_bytes'])
+        print(f"Source: {metric['url']}")
+        print(f"  └─ File Size: {readable_size}")
+        print(f"  └─ Unique Valid Domains: {metric['domain_count']:,}\n")
+
+    print("="*50)
+    # =========================
+    # GLOBAL STATS
     # =========================
 
     print(f"[INFO] Downloaded sources: {total_downloaded}")
-    print(f"[INFO] Raw domains found: {raw_domains}")
-    print(f"[INFO] Unique valid domains: {len(valid_domains)}")
-    print(f"[INFO] Duplicates/invalid removed: {raw_domains - len(valid_domains)}")
-    print(f"[INFO] Saved: {ADAWAY_FILE}")
+    print(f"[INFO] Raw domains processed: {raw_domains}")
+    print(f"[INFO] Global unique valid domains: {len(valid_domains)}")
+    print(f"[INFO] Global duplicates/invalid removed: {raw_domains - len(valid_domains)}")
+    print(f"[INFO] Saved combined file to: {ADAWAY_FILE}")
 
 
 if __name__ == "__main__":
