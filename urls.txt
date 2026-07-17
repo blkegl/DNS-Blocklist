@@ -83,7 +83,7 @@ https://blocklistproject.github.io/Lists/facebook.txt
 # https://blocklistproject.github.io/Lists/malware.txt
 
 # Blocklist Project Phishing
-https://blocklistproject.github.io/Lists/phishing.txt
+# https://blocklistproject.github.io/Lists/phishing.txt
 
 # Blocklist Project Ransomware
 https://blocklistproject.github.io/Lists/ransomware.txt
