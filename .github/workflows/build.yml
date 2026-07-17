@@ -36,6 +36,7 @@ jobs:
 
           # Add generated blocklists
           git add adaway.txt
+          git add dnsmasq.txt
 
           git commit -m "Update blocklists" || echo "No changes"
           git push
