@@ -62,7 +62,7 @@ https://raw.githubusercontent.com/Bundy01/meta-blocklists/main/meta-domains.txt
 https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews-social/hosts
 
 # 1Hosts
-https://badmojr.github.io/1Hosts/Lite/hosts.txt
+# https://badmojr.github.io/1Hosts/Lite/hosts.txt
 
 # Blocklist Project Abuse
 # https://blocklistproject.github.io/Lists/abuse.txt
