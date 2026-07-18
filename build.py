@@ -68,7 +68,9 @@ def main():
                     r.raise_for_status()
                     sz = int(r.headers.get("Content-Length", "0") or 0)
                     fb, uniq = 0, set()
-                    file_raw_lines, file_valid_instances = 0, 0
+                    
+                    # Track what this specific file contributes to the global unique set
+                    initial_g_size = len(g)
                     
                     for b in r.iter_lines():
                         if b is None: 
@@ -78,25 +80,22 @@ def main():
                         
                         extracted = extract(b.decode("utf-8", "ignore"))
                         if extracted:
-                            file_raw_lines += 1
                             validated = valid(extracted)
                             if validated:
-                                file_valid_instances += 1
                                 uniq.add(validated)
                                 g.add(validated)
                     
-                    # Exact internal breakdowns
                     u_count = len(uniq)
-                    internal_dupes = file_valid_instances - u_count
-                    invalid_entries = file_raw_lines - file_valid_instances
+                    kept_count = len(g) - initial_g_size
                     
-                    metrics.append((u, sz or fb, u_count, internal_dupes, invalid_entries))
+                    metrics.append((u, sz or fb, u_count, kept_count))
                     total_sum_unique += u_count
                     ok += 1
-                    print(f"  └─ {u_count:,} unique valid domains")
+                    print(f"  └─ {u_count:,} unique valid domains ({kept_count:,} new)")
             except requests.RequestException as e: 
                 print("  └─ HTTP ERROR:", e)
 
+    # Sort by the number of unique valid domains found in the source
     metrics.sort(key=lambda x: x[2], reverse=True)
     clean = sorted(list(g))
 
@@ -108,12 +107,11 @@ def main():
     print("\n" + "=" * 50)
     print(" INDIVIDUAL SOURCE METRICS REPORT")
     print("=" * 50)
-    for u, s, c, internal_d, invalid_e in metrics:
+    for u, s, c, kept in metrics:
         print(f"Source: {u}")
         print(f"  └─ File Size: {fmt(s)}")
         print(f"  └─ Unique Valid Domains: {c:,}")
-        print(f"  └─ Internal Duplicates Removed: {internal_d:,}")
-        print(f"  └─ Invalid Lines Dropped: {invalid_e:,}\n")
+        print(f"  └─ Kept After Global Duplicates Removal: {kept:,}\n")
 
     print("=" * 50)
     print(f"[INFO] Downloaded sources: {ok}")
