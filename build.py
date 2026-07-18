@@ -33,9 +33,7 @@ def valid(d):
     return d if DOMAIN_REGEX.fullmatch(d) else None
 
 def extract(line):
-    # Strip BOM, whitespace, and lowercase early
     line = line.lstrip("\ufeff").strip().lower()
-    # Fast drop for comment lines or empty space before execution splits
     if not line or line.startswith("#"):
         return None
     
@@ -44,7 +42,6 @@ def extract(line):
     if not p: 
         return None
     
-    # Process hosts structure vs plain domain format cleanly
     if p[0] in HOSTS:
         if len(p) < 2:
             return None
@@ -59,7 +56,7 @@ def main():
     with open(INPUT_FILE, encoding="utf-8") as f:
         urls = list(dict.fromkeys(l.strip() for l in f if l.strip() and not l.lstrip().startswith("#")))
 
-    g, metrics, raw, ok = set(), [], 0, 0
+    g, metrics, total_sum_unique, ok = set(), [], 0, 0
 
     with requests.Session() as sess:
         sess.headers.update({"User-Agent": USER_AGENT})
@@ -70,7 +67,8 @@ def main():
                 with sess.get(u, stream=True, timeout=TIMEOUT) as r:
                     r.raise_for_status()
                     sz = int(r.headers.get("Content-Length", "0") or 0)
-                    fb, uniq, cnt, file_raw_cnt = 0, set(), 0, 0
+                    fb, uniq = 0, set()
+                    file_raw_lines, file_valid_instances = 0, 0
                     
                     for b in r.iter_lines():
                         if b is None: 
@@ -80,18 +78,22 @@ def main():
                         
                         extracted = extract(b.decode("utf-8", "ignore"))
                         if extracted:
-                            file_raw_cnt += 1  # Increment on EVERY raw text extraction
-                            
+                            file_raw_lines += 1
                             validated = valid(extracted)
                             if validated:
-                                cnt += 1  # Increments for every clean, valid domain encountered
+                                file_valid_instances += 1
                                 uniq.add(validated)
                                 g.add(validated)
-                                
-                    metrics.append((u, sz or fb, len(uniq), file_raw_cnt))
-                    raw += cnt
+                    
+                    # Exact internal breakdowns
+                    u_count = len(uniq)
+                    internal_dupes = file_valid_instances - u_count
+                    invalid_entries = file_raw_lines - file_valid_instances
+                    
+                    metrics.append((u, sz or fb, u_count, internal_dupes, invalid_entries))
+                    total_sum_unique += u_count
                     ok += 1
-                    print(f"  └─ {len(uniq):,} unique valid domains (Dropped {file_raw_cnt - len(uniq):,} internal duplicates/invalid)")
+                    print(f"  └─ {u_count:,} unique valid domains")
             except requests.RequestException as e: 
                 print("  └─ HTTP ERROR:", e)
 
@@ -106,17 +108,18 @@ def main():
     print("\n" + "=" * 50)
     print(" INDIVIDUAL SOURCE METRICS REPORT")
     print("=" * 50)
-    for u, s, c, r_cnt in metrics:
+    for u, s, c, internal_d, invalid_e in metrics:
         print(f"Source: {u}")
         print(f"  └─ File Size: {fmt(s)}")
         print(f"  └─ Unique Valid Domains: {c:,}")
-        print(f"  └─ Internal Duplicates/Invalid Removed: {r_cnt - c:,}\n")
+        print(f"  └─ Internal Duplicates Removed: {internal_d:,}")
+        print(f"  └─ Invalid Lines Dropped: {invalid_e:,}\n")
 
     print("=" * 50)
     print(f"[INFO] Downloaded sources: {ok}")
-    print(f"[INFO] Raw valid domains encountered globally: {raw:,}")
+    print(f"[INFO] Sum of unique source domains: {total_sum_unique:,}")
     print(f"[INFO] Global unique valid domains written: {len(clean):,}")
-    print(f"[INFO] Cross-list duplicates filtered out: {raw - len(clean):,}")
+    print(f"[INFO] Cross-list duplicates filtered out: {total_sum_unique - len(clean):,}")
     print("=" * 50)
 
 if __name__ == "__main__":
