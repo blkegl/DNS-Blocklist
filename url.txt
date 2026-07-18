@@ -17,7 +17,7 @@ https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/wildcard/dyndns-onlydom
 https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/wildcard/doh-vpn-proxy-bypass-onlydomains.txt
 
 # Phishing Army
-https://phishing.army/download/phishing_army_blocklist_extended.txt
+# https://phishing.army/download/phishing_army_blocklist_extended.txt
 
 # Android Security Hosts
 https://raw.githubusercontent.com/furkun/AndroidSecurityHosts/main/hosts
@@ -83,7 +83,7 @@ https://blocklistproject.github.io/Lists/facebook.txt
 # https://blocklistproject.github.io/Lists/malware.txt
 
 # Blocklist Project Phishing
-https://blocklistproject.github.io/Lists/phishing.txt
+# https://blocklistproject.github.io/Lists/phishing.txt
 
 # Blocklist Project Ransomware
 https://blocklistproject.github.io/Lists/ransomware.txt
