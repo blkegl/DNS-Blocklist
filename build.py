@@ -79,18 +79,19 @@ def main():
                             fb += len(b) + 1
                         
                         extracted = extract(b.decode("utf-8", "ignore"))
-                        validated = valid(extracted)
-                        if validated:
-                            file_raw_cnt += 1 # Total valid domains encountered in this file
-                            cnt += 1          
-                            uniq.add(validated)
-                            g.add(validated)
+                        if extracted:
+                            file_raw_cnt += 1  # Increment on EVERY raw text extraction
+                            
+                            validated = valid(extracted)
+                            if validated:
+                                cnt += 1  # Increments for every clean, valid domain encountered
+                                uniq.add(validated)
+                                g.add(validated)
                                 
-                    # Store raw count alongside unique count for individual reporting
                     metrics.append((u, sz or fb, len(uniq), file_raw_cnt))
                     raw += cnt
                     ok += 1
-                    print(f"  └─ {len(uniq):,} unique valid domains (Dropped {file_raw_cnt - len(uniq):,} internal duplicates)")
+                    print(f"  └─ {len(uniq):,} unique valid domains (Dropped {file_raw_cnt - len(uniq):,} internal duplicates/invalid)")
             except requests.RequestException as e: 
                 print("  └─ HTTP ERROR:", e)
 
@@ -109,7 +110,7 @@ def main():
         print(f"Source: {u}")
         print(f"  └─ File Size: {fmt(s)}")
         print(f"  └─ Unique Valid Domains: {c:,}")
-        print(f"  └─ Internal Duplicates Removed: {r_cnt - c:,}\n")
+        print(f"  └─ Internal Duplicates/Invalid Removed: {r_cnt - c:,}\n")
 
     print("=" * 50)
     print(f"[INFO] Downloaded sources: {ok}")
