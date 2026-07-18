@@ -57,7 +57,6 @@ def main():
         return
 
     with open(INPUT_FILE, encoding="utf-8") as f:
-        # Keeps original list ordering intact via insertion-ordered deduplication
         urls = list(dict.fromkeys(l.strip() for l in f if l.strip() and not l.lstrip().startswith("#")))
 
     g, metrics, raw, ok = set(), [], 0, 0
@@ -71,7 +70,7 @@ def main():
                 with sess.get(u, stream=True, timeout=TIMEOUT) as r:
                     r.raise_for_status()
                     sz = int(r.headers.get("Content-Length", "0") or 0)
-                    fb, uniq, cnt = 0, set(), 0
+                    fb, uniq, cnt, file_raw_cnt = 0, set(), 0, 0
                     
                     for b in r.iter_lines():
                         if b is None: 
@@ -82,21 +81,22 @@ def main():
                         extracted = extract(b.decode("utf-8", "ignore"))
                         validated = valid(extracted)
                         if validated:
-                            cnt += 1  # Accurately counts actual valid domains before deduplication
+                            file_raw_cnt += 1 # Total valid domains encountered in this file
+                            cnt += 1          
                             uniq.add(validated)
                             g.add(validated)
                                 
-                    metrics.append((u, sz or fb, len(uniq)))
+                    # Store raw count alongside unique count for individual reporting
+                    metrics.append((u, sz or fb, len(uniq), file_raw_cnt))
                     raw += cnt
                     ok += 1
-                    print(f"  └─ {len(uniq):,} unique valid domains")
+                    print(f"  └─ {len(uniq):,} unique valid domains (Dropped {file_raw_cnt - len(uniq):,} internal duplicates)")
             except requests.RequestException as e: 
                 print("  └─ HTTP ERROR:", e)
 
     metrics.sort(key=lambda x: x[2], reverse=True)
     clean = sorted(list(g))
 
-    # Single-pass massive I/O block write to maximize disk throughput
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
         if clean:
             f.write("\n".join(clean))
@@ -105,14 +105,17 @@ def main():
     print("\n" + "=" * 50)
     print(" INDIVIDUAL SOURCE METRICS REPORT")
     print("=" * 50)
-    for u, s, c in metrics:
-        print(f"Source: {u}\n  └─ File Size: {fmt(s)}\n  └─ Unique Valid Domains: {c:,}\n")
+    for u, s, c, r_cnt in metrics:
+        print(f"Source: {u}")
+        print(f"  └─ File Size: {fmt(s)}")
+        print(f"  └─ Unique Valid Domains: {c:,}")
+        print(f"  └─ Internal Duplicates Removed: {r_cnt - c:,}\n")
 
     print("=" * 50)
     print(f"[INFO] Downloaded sources: {ok}")
-    print(f"[INFO] Raw valid domains encountered: {raw:,}")
+    print(f"[INFO] Raw valid domains encountered globally: {raw:,}")
     print(f"[INFO] Global unique valid domains written: {len(clean):,}")
-    print(f"[INFO] Total duplicate entries dropped: {raw - len(clean):,}")
+    print(f"[INFO] Cross-list duplicates filtered out: {raw - len(clean):,}")
     print("=" * 50)
 
 if __name__ == "__main__":
