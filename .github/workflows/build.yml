@@ -23,7 +23,11 @@ jobs:
 
       - name: Install dependencies
         run: |
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          else
             pip install requests
+          fi
 
       - name: Generate blocklist
         run: python build.py
@@ -35,6 +39,6 @@ jobs:
           
           git add domains.txt
           
-          # Force a commit with a timestamped message to ensure it never skips
-          git commit -m "Automated blocklist update: $(date -u +'%Y-%m-%d %H:%M:%S UTC') [skip ci]"
+          # Added --allow-empty so Git creates a commit even when domains.txt hasn't changed
+          git commit --allow-empty -m "Automated blocklist update: $(date -u +'%Y-%m-%d %H:%M:%S UTC') [skip ci]"
           git push origin main
