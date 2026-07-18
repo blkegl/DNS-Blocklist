@@ -1,5 +1,5 @@
 # Hagezi Ultimate
-https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/hosts/ultimate.txt
+# https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/hosts/ultimate.txt
 
 # Threat Intelligence Mini
 https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/wildcard/tif.mini-onlydomains.txt
@@ -17,7 +17,7 @@ https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/wildcard/dyndns-onlydom
 https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/wildcard/doh-vpn-proxy-bypass-onlydomains.txt
 
 # Phishing Army
-# https://phishing.army/download/phishing_army_blocklist_extended.txt
+https://phishing.army/download/phishing_army_blocklist_extended.txt
 
 # Android Security Hosts
 https://raw.githubusercontent.com/furkun/AndroidSecurityHosts/main/hosts
@@ -65,10 +65,10 @@ https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews-s
 https://badmojr.github.io/1Hosts/Lite/hosts.txt
 
 # Blocklist Project Abuse
-# https://blocklistproject.github.io/Lists/abuse.txt
+https://blocklistproject.github.io/Lists/abuse.txt
 
 # Blocklist Project Ads 
-# https://blocklistproject.github.io/Lists/ads.txt
+https://blocklistproject.github.io/Lists/ads.txt
 
 # Blocklist Project Crypto
 https://blocklistproject.github.io/Lists/crypto.txt
@@ -77,19 +77,19 @@ https://blocklistproject.github.io/Lists/crypto.txt
 https://blocklistproject.github.io/Lists/facebook.txt
 
 # Blocklist Project Fraud
-# https://blocklistproject.github.io/Lists/fraud.txt
+https://blocklistproject.github.io/Lists/fraud.txt
 
 # Blocklist Project Malware (too big)
 # https://blocklistproject.github.io/Lists/malware.txt
 
 # Blocklist Project Phishing
-# https://blocklistproject.github.io/Lists/phishing.txt
+https://blocklistproject.github.io/Lists/phishing.txt
 
 # Blocklist Project Ransomware
 https://blocklistproject.github.io/Lists/ransomware.txt
 
 # Blocklist Project Redirect
-# https://blocklistproject.github.io/Lists/redirect.txt
+https://blocklistproject.github.io/Lists/redirect.txt
 
 # Blocklist Project Scam
 https://blocklistproject.github.io/Lists/scam.txt
