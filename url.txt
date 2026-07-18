@@ -44,7 +44,7 @@ https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews-s
 # https://badmojr.github.io/1Hosts/Lite/hosts.txt
 
 # Blocklist Project Abuse
-https://blocklistproject.github.io/Lists/abuse.txt
+# https://blocklistproject.github.io/Lists/abuse.txt
 
 # Blocklist Project Ads 
 https://blocklistproject.github.io/Lists/ads.txt
@@ -52,11 +52,8 @@ https://blocklistproject.github.io/Lists/ads.txt
 # Blocklist Project Crypto
 https://blocklistproject.github.io/Lists/crypto.txt
 
-# Blocklist Project Facebook
-https://blocklistproject.github.io/Lists/facebook.txt
-
 # Blocklist Project Fraud
-https://blocklistproject.github.io/Lists/fraud.txt
+# https://blocklistproject.github.io/Lists/fraud.txt
 
 # Blocklist Project Malware (too big)
 # https://blocklistproject.github.io/Lists/malware.txt
@@ -78,9 +75,6 @@ https://blocklistproject.github.io/Lists/tiktok.txt
 
 # Blocklist Project Tracking
 https://blocklistproject.github.io/Lists/tracking.txt
-
-# Blocklist Project Smart TV
-https://blocklistproject.github.io/Lists/smart-tv.txt
 
 # Android Tracking
 https://perflyst.github.io/PiHoleBlocklist/android-tracking.txt
