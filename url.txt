@@ -1,8 +1,8 @@
 # Hagezi Ultimate
 https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/hosts/ultimate.txt
 
-# Threat Intelligence Medium
-https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/wildcard/tif.medium-onlydomains.txt
+# Threat Intelligence Mini
+https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/wildcard/tif.mini-onlydomains.txt
 
 # Social Media
 https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/wildcard/social-onlydomains.txt
@@ -65,7 +65,7 @@ https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews-s
 https://badmojr.github.io/1Hosts/Lite/hosts.txt
 
 # Blocklist Project Abuse
-https://blocklistproject.github.io/Lists/abuse.txt
+# https://blocklistproject.github.io/Lists/abuse.txt
 
 # Blocklist Project Ads 
 https://blocklistproject.github.io/Lists/ads.txt
@@ -77,7 +77,7 @@ https://blocklistproject.github.io/Lists/crypto.txt
 https://blocklistproject.github.io/Lists/facebook.txt
 
 # Blocklist Project Fraud
-https://blocklistproject.github.io/Lists/fraud.txt
+# https://blocklistproject.github.io/Lists/fraud.txt
 
 # Blocklist Project Malware (too big)
 # https://blocklistproject.github.io/Lists/malware.txt
