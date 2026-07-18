@@ -38,7 +38,7 @@ https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combine
 # https://blocklistproject.github.io/Lists/ads.txt
 
 # Blocklist Project Crypto
-https://blocklistproject.github.io/Lists/crypto.txt
+# https://blocklistproject.github.io/Lists/crypto.txt
 
 # Blocklist Project Fraud
 # https://blocklistproject.github.io/Lists/fraud.txt
@@ -47,7 +47,7 @@ https://blocklistproject.github.io/Lists/crypto.txt
 # https://blocklistproject.github.io/Lists/malware.txt
 
 # Blocklist Project Phishing
-https://blocklistproject.github.io/Lists/phishing.txt
+# https://blocklistproject.github.io/Lists/phishing.txt
 
 # Blocklist Project Ransomware
 https://blocklistproject.github.io/Lists/ransomware.txt
@@ -68,7 +68,7 @@ https://blocklistproject.github.io/Lists/tracking.txt
 https://perflyst.github.io/PiHoleBlocklist/android-tracking.txt
 
 # Phishing Army
-https://phishing.army/download/phishing_army_blocklist_extended.txt
+# https://phishing.army/download/phishing_army_blocklist_extended.txt
 
 # Android Security Hosts
 https://raw.githubusercontent.com/furkun/AndroidSecurityHosts/main/hosts
