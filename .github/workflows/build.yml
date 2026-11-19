@@ -2,7 +2,7 @@ name: Build Blocklist
 
 on:
   schedule:
-    # 3 AM Bangladesh time (UTC+6)
+    # 3:00 AM Bangladesh time (UTC+6) = 21:00 UTC the previous day
     - cron: '0 21 * * *'
   workflow_dispatch:
 
@@ -15,11 +15,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+          cache: 'pip'
 
       - name: Install dependencies
         run: |
@@ -36,9 +39,14 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          
+
           git add domains.txt
-          
-          # Added --allow-empty so Git creates a commit even when domains.txt hasn't changed
-          git commit --allow-empty -m "Automated blocklist update: $(date -u +'%Y-%m-%d %H:%M:%S UTC') [skip ci]"
-          git push origin main
+
+          if git diff --staged --quiet; then
+            echo "No changes to domains.txt; skipping commit."
+            exit 0
+          fi
+
+          git commit -m "Automated blocklist update: $(date -u +'%Y-%m-%d %H:%M:%S UTC') [skip ci]"
+          git pull --rebase origin main
+          git push origin HEAD:main
